@@ -10,7 +10,7 @@
       margin: 0;
       padding: 0;
     }
-    .main {
+    .main, #wubi {
       position: relative;
       width: 700px;
       height: 450px;
@@ -24,6 +24,10 @@
       max-width: 100%;
       height: auto;
     }
+    #wubi {
+      display: none;
+      background-color: rgba(255,255,255, .7);
+    }
   </style>
 </head>
 <body>
@@ -33,6 +37,7 @@
     <div id="canvases" class="frame auto-size">
       <!-- canvases -->
     </div>
+    <div id="wubi" class="frame auto-size"></div>
   </div>
     <a id="submit" href="#">提交</a>
 </div>
@@ -165,6 +170,7 @@ if (!HTMLCanvasElement.prototype.toBlob) {
 
 <script>
   var isPending = false;
+  var wubi = document.getElementById('wubi');
   var baseImage = document.getElementById('baseImage');
   var doodle = new Doodle(document.getElementById('canvases'));
   var xhr = new XMLHttpRequest();
@@ -173,10 +179,11 @@ if (!HTMLCanvasElement.prototype.toBlob) {
   xhr.onload = function(event) {
     var timestamp = (new Date()).valueOf();
     baseImage.setAttribute('src', 'https://api.about-alex.top/doodle-image?_t=' + timestamp);
-    doodle.refresh();
   }
 
   baseImage.onload = function() {
+    doodle.refresh();
+    wubi.style.display = 'none';
     isPending = false;
   }
 
@@ -191,6 +198,7 @@ if (!HTMLCanvasElement.prototype.toBlob) {
     event.preventDefault();
     if (! isPending) {
       isPending = true;
+      wubi.style.display = 'block';
       doodle.blob(function(blob) {
         uploadImage(blob);
       })
