@@ -1,6 +1,6 @@
-const { createCanvas, loadImage } = require('canvas')
+const { createCanvas } = require('canvas')
 const fs = require('fs')
-const refresh = () => {
+function refresh() {
   const canvas = createCanvas(700, 450)
   const out = fs.createWriteStream(__dirname + '/doodle.png');
 
