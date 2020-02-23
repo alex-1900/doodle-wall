@@ -8,6 +8,8 @@ const actionMergeImage = require('./src/actions/merge-image');
 const actionDoodleImage = require('./src/actions/doodle-image');
 const fs = require('fs')
 
+const refresh = require('./blankDoodleImage')
+
 // App 设置
 const app = express();
 app.use(cors())
@@ -24,6 +26,11 @@ actionDoodleImage(app, canvas)
 app.get('/', function(req, res) {
   const html = fs.readFileSync(__dirname + '/static/index.html', 'utf8');
   res.send(html)
+})
+
+app.get('/refresh', function(req, res) {
+  refresh();
+  res.send('done')
 })
 
 app.listen(3000, () => console.log(`Example app listening on port 3000!`));
