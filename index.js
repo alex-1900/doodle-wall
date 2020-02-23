@@ -1,4 +1,5 @@
 const express = require('express');
+var cors = require('cors')
 const fileUpload = require('express-fileupload');
 
 const { createCanvas } = require('canvas')
@@ -9,6 +10,7 @@ const fs = require('fs')
 
 // App 设置
 const app = express();
+app.use(cors())
 app.use(fileUpload());
 
 // 加载 doodle 图片
