@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    .main {
+      position: relative;
+      width: 700px;
+      height: 450px;
+    }
+    .frame {
+      position: absolute;
+      top:0;
+      left:0;
+    }
+    .auto-size {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+<div class="padding-page">
+  <div class="main">
+    <img id="baseImage" class="frame auto-size" src="/doodle-image" alt="doodle image" />
+    <div id="canvases" class="frame auto-size">
+      <!-- canvases -->
+    </div>
+  </div>
+    <a id="submit" href="#">提交</a>
+</div>
+
+<script>
+// document.domain = 'about-alex.top';
+if (!HTMLCanvasElement.prototype.toBlob) {
+   Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+     value: function (callback, type, quality) {
+       var canvas = this;
+       setTimeout(function() {
+         var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
+         len = binStr.length,
+         arr = new Uint8Array(len);
+
+         for (var i = 0; i < len; i++ ) {
+            arr[i] = binStr.charCodeAt(i);
+         }
+
+         callback(new Blob([arr], {type: type || 'image/png'}));
+       });
+     }
+  });
+}
+
+(function() {
+  function Doodle(container) {
+    this.container = container;
+    this.frame = Doodle.createFrame();
+    this.context = this.frame.getContext('2d');
+    this.isMobile = Doodle.isMobileDevice();
+    this.isdrawing = false;
+    this.pos = {};
+    this.prevPos = {};
+    this.registerEvents();
+  }
+
+  Doodle.createFrame = function() {
+    var canvas = document.createElement('canvas');
+    canvas.width = 700;
+    canvas.height = 450;
+    return canvas;
+  }
+
+  Doodle.isMobileDevice = function() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
+  /**
+  * window 坐标转变为 canvas 坐标
+  */
+  Doodle.prototype.windowToCanvas = function(x, y) {
+    var bbox = this.frame.getBoundingClientRect();
+    return {
+      x: (x - bbox.left) * (this.frame.width / bbox.width),
+      y: (y - bbox.top) * (this.frame.height / bbox.height)
+    }
+  }
+
+  Doodle.prototype.refresh = function() {
+    this.container.removeChild(this.frame);
+    this.frame = Doodle.createFrame();
+    this.context = this.frame.getContext('2d');
+    this.registerEvents();
+    this.putFrame();
+  }
+
+  Doodle.prototype.putFrame = function() {
+    this.container.appendChild(this.frame);
+  }
+
+  Doodle.prototype.registerEvents = function() {
+    console.log(1111)
+    // 兼容手机和 PC 端的触控事件
+    var onDraw = 'onmousedown';
+    var onDrawing = 'onmousemove';
+    var onStop = 'onmouseup';
+    if (this.isMobile) {
+      onDraw = 'ontouchstart';
+      onDrawing = 'ontouchmove';
+      onStop = 'ontouchend';
+    }
+    this.frame[onDraw] = this.handleDrawBegin.bind(this);
+    this.frame[onDrawing] = this.handleDrawing.bind(this);
+    this.frame[onStop] = this.handleDrawingEnd.bind(this);
+  }
+
+  Doodle.prototype.handleDrawBegin = function(event) {
+    event.preventDefault();
+    var target = event;
+    if (this.isMobile) {
+      var target = event.targetTouches[0];
+    }
+    var loc = this.windowToCanvas(target.clientX, target.clientY);
+    this.isdrawing = true;
+    this.pos = loc;
+    this.prevPos = loc;
+  }
+
+  Doodle.prototype.handleDrawing = function(event) {
+    event.preventDefault();
+    if (this.isdrawing) {
+      var target = event;
+      if (this.isMobile) {
+        var target = event.targetTouches[0];
+      }
+
+      var loc = this.windowToCanvas(target.clientX, target.clientY);
+      this.context.beginPath();
+      this.context.lineTo(this.prevPos.x, this.prevPos.y);
+      this.context.lineTo(loc.x, loc.y);
+      this.context.closePath();
+      this.context.stroke()
+      this.prevPos = loc;
+    }
+  }
+
+  Doodle.prototype.handleDrawingEnd = function(event) {
+    event.preventDefault();
+    this.isdrawing = false;
+  }
+
+  Doodle.prototype.blob = function(callback) {
+    this.frame.toBlob(callback);
+  }
+
+  window.Doodle = Doodle;
+})();
+</script>
+
+<script>
+  var isPending = false;
+  var baseImage = document.getElementById('baseImage');
+  var doodle = new Doodle(document.getElementById('canvases'));
+  var xhr = new XMLHttpRequest();
+  doodle.putFrame();
+
+  xhr.onload = function(event) {
+    var timestamp = (new Date()).valueOf();
+    baseImage.setAttribute('src', '/doodle-image?_t=' + timestamp);
+    doodle.refresh();
+  }
+
+  baseImage.onload = function() {
+    isPending = false;
+  }
+
+  var uploadImage = function(blob) {
+    var formData = new FormData();
+    formData.append('file', blob);
+    xhr.open('POST', '/merge-image');
+    xhr.send(formData);
+  }
+
+  document.getElementById('submit').onclick = function(event) {
+    event.preventDefault();
+    if (! isPending) {
+      isPending = true;
+      doodle.blob(function(blob) {
+        uploadImage(blob);
+      })
+    }
+  }
+</script>
+</body>
+</html>

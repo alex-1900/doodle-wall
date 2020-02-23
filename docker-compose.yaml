@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  client:
+    image: node:13.8.0-alpine3.11
+    build: .
+    tty: true
+    working_dir: /web
+    volumes:
+      - .:/web
+    ports:
+      - 80:80
+      - 443:443
+      - 3000:3000
