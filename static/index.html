@@ -33,7 +33,7 @@
 <body>
 <div class="padding-page">
   <div class="main">
-    <img id="baseImage" class="frame auto-size" src="https://api.about-alex.top/doodle-image" alt="doodle image" />
+    <img id="baseImage" class="frame auto-size" src="/doodle-image" alt="doodle image" />
     <div id="canvases" class="frame auto-size">
       <!-- canvases -->
     </div>
@@ -178,7 +178,7 @@ if (!HTMLCanvasElement.prototype.toBlob) {
 
   xhr.onload = function(event) {
     var timestamp = (new Date()).valueOf();
-    baseImage.setAttribute('src', 'https://api.about-alex.top/doodle-image?_t=' + timestamp);
+    baseImage.setAttribute('src', '/doodle-image?_t=' + timestamp);
   }
 
   baseImage.onload = function() {
@@ -190,7 +190,7 @@ if (!HTMLCanvasElement.prototype.toBlob) {
   var uploadImage = function(blob) {
     var formData = new FormData();
     formData.append('file', blob);
-    xhr.open('POST', 'https://api.about-alex.top/merge-image');
+    xhr.open('POST', '/merge-image');
     xhr.send(formData);
   }
 

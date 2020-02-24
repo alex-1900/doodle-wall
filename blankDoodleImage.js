@@ -7,6 +7,7 @@ function refresh() {
   const stream = canvas.createPNGStream();
   stream.pipe(out);
   out.on('finish', () => {});
+  return canvas;
 }
 
 module.exports = refresh;

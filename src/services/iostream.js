@@ -12,6 +12,7 @@ const canvasLoadDoodleImage = (canvas) => {
   loadImage(__dirname + '/../../doodle.png').then(image => {
     ctx.drawImage(image, 0, 0);
   });
+  return canvas;
 }
 
 module.exports = {
